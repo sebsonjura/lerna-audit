@@ -10,7 +10,10 @@ const {join} = require('path');
 
 const {argv} = require('yargs')
     .boolean("fix")
-    .default("fix", true);
+    .default("fix", true)
+    .boolean("json")
+    .default("json", true);
+
 
 let packagePaths;
 
@@ -87,10 +90,11 @@ async function lernaAudit() {
             await writeJson(packagePaths.originalPath, newPackageJson, jsonOpts)
 
             console.log(`Run audit in ${lernaPackage.location}`);
-            const auditResult = spawnSync('npm', ['audit'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
+            const jsonParam = !!argv.json ? '--json' : '';
+            const auditResult = spawnSync('npm', ['audit', jsonParam], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
             if(auditResult.status !== 0 && argv.fix){
                 console.log('We will fix this for you');
-                spawnSync('npm', ['audit', 'fix'], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
+                spawnSync('npm', ['audit', 'fix', jsonParam], { cwd: lernaPackage.location, stdio: 'inherit', shell: true });
             }
             const restoredPackageJson = restorePackageJson(packagePaths, internalLernaDependencies);
 
